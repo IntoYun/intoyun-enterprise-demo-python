@@ -6,7 +6,7 @@
 
 ## 准备工作
 
-1. 注册成为[IntoYun开发者](https://www.intoyun.com)，进行企业认证后，在_授权管理_中提交`服务器授权申请`。
+1. 注册成为[IntoYun开发者](https://www.intoyun.com)，进行企业认证后，在__授权管理__中提交`服务器授权申请`。
 
 
 ## 开发依赖
@@ -18,6 +18,5 @@
 ## 测试数据
 　我们提供了基于[postman](https://www.getpostman.com/)的测试数据，导入test目录中的测试集(postman_collection.json)和测试环境变量(postman_environment.json)即可。
 
-- tornado(v4.5.2)
 ## TODO
 - 异步获取数据库
