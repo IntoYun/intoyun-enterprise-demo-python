@@ -13,6 +13,12 @@ class Redis(object):
             db=config["DB"],
         )
 
+    def set(self, key, val):
+        return self.client.set(key, val)
+
+    def get(self, key):
+        return self.client.get(key)
+
     def hset(self, key, field, val):
         return self.client.hset(key, field, val)
 
@@ -28,6 +34,9 @@ class Redis(object):
 
     def hgetall(self, key):
         return self.client.hgetall(key)
+
+    def hdel(self, key, field):
+        return self.client.hdel(key, field)
 
     def delete(self, key):
         return self.client.delete(key)

@@ -14,3 +14,6 @@
 - tornado(v4.5.2)
 - redis(v3.2)
 - mongodb(v3.4)
+
+## TODO
+- 异步获取数据库

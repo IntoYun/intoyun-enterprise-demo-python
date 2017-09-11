@@ -8,5 +8,5 @@ from handlers.product import ProductHandler
 def routes():
     return [
         (r"/manager", ManagerHandler),
-        (r"/product", ProductHandler),
+        (r"/product/?(?P<prdId>\w{16})?", ProductHandler),
     ]
