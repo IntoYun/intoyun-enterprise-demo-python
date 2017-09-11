@@ -1,0 +1,336 @@
+{
+	"variables": [],
+	"info": {
+		"name": "third-party",
+		"_postman_id": "1440fbf7-e291-ed6e-d310-4d67a2622152",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "manager_login",
+			"request": {
+				"url": "{{scheme}}://{{host}}:{{port}}/manager",
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "username",
+							"value": "{{username}}",
+							"description": "",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "{{password}}",
+							"description": "",
+							"type": "text"
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "manager_get",
+			"request": {
+				"url": "{{scheme}}://{{host}}:{{port}}/manager",
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "username",
+							"value": "{{username}}",
+							"description": "",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "{{password}}",
+							"description": "",
+							"type": "text"
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "product_get",
+			"request": {
+				"url": "{{scheme}}://{{host}}:{{port}}/product",
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "product_getId",
+			"request": {
+				"url": "{{scheme}}://{{host}}:{{port}}/product/{{pid}}",
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "device_get",
+			"request": {
+				"url": {
+					"raw": "{{scheme}}://{{host}}:{{port}}/device?productId={{pid}}",
+					"protocol": "{{scheme}}",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"device"
+					],
+					"query": [
+						{
+							"key": "productId",
+							"value": "{{pid}}",
+							"equals": true,
+							"description": ""
+						}
+					],
+					"variable": []
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "control_post",
+			"request": {
+				"url": {
+					"raw": "{{scheme}}://{{host}}:{{port}}/control?productId={{pid}}&deviceId={{did}}",
+					"protocol": "{{scheme}}",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"control"
+					],
+					"query": [
+						{
+							"key": "productId",
+							"value": "{{pid}}",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "deviceId",
+							"value": "{{did}}",
+							"equals": true,
+							"description": ""
+						}
+					],
+					"variable": []
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n  {\n    \"dpId\": 1,\n    \"type\": \"enum\",\n    \"value\": 0\n  },\n  {\n    \"dpId\": 2,\n    \"type\": \"float\",\n    \"value\": 3802\n  },\n  {\n    \"dpId\": 3,\n    \"type\": \"bool\",\n    \"value\": 1\n  },\n  {\n    \"deviceId\": \"1tYxc5ene000000000000034\",\n    \"dpId\": 4,\n    \"type\": \"string\",\n    \"value\": \"hello, world!\"\n  },\n  {\n\n    \"deviceId\": \"1tYxc5ene000000000000032\",\n    \"dpId\": 5,\n    \"type\": \"extra\",\n    \"value\": \"010203040fabde\"\n  }\n]"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "datapoints_get_by_prdId",
+			"request": {
+				"url": {
+					"raw": "{{scheme}}://{{host}}:{{port}}/sensordata?productId={{pid}}&interval=1h&start=10&end=1605136017",
+					"protocol": "{{scheme}}",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"sensordata"
+					],
+					"query": [
+						{
+							"key": "productId",
+							"value": "{{pid}}",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "interval",
+							"value": "1h",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "start",
+							"value": "10",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "end",
+							"value": "1605136017",
+							"equals": true,
+							"description": ""
+						}
+					],
+					"variable": []
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "datapoints_get_by_devId",
+			"request": {
+				"url": {
+					"raw": "{{scheme}}://{{host}}:{{port}}/sensordata?productId={{pid}}&deviceId={{did}}&interval=1h&start=10&end=1605136017",
+					"protocol": "{{scheme}}",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"sensordata"
+					],
+					"query": [
+						{
+							"key": "productId",
+							"value": "{{pid}}",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "deviceId",
+							"value": "{{did}}",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "interval",
+							"value": "1h",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "start",
+							"value": "10",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "end",
+							"value": "1605136017",
+							"equals": true,
+							"description": ""
+						}
+					],
+					"variable": []
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "datapoints_get_by_dpId",
+			"request": {
+				"url": {
+					"raw": "{{scheme}}://{{host}}:{{port}}/sensordata?productId={{pid}}&deviceId={{did}}&dpId=3&interval=1h&start=10&end=1605136017",
+					"protocol": "{{scheme}}",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"sensordata"
+					],
+					"query": [
+						{
+							"key": "productId",
+							"value": "{{pid}}",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "deviceId",
+							"value": "{{did}}",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "dpId",
+							"value": "3",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "interval",
+							"value": "1h",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "start",
+							"value": "10",
+							"equals": true,
+							"description": ""
+						},
+						{
+							"key": "end",
+							"value": "1605136017",
+							"equals": true,
+							"description": ""
+						}
+					],
+					"variable": []
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}

@@ -15,5 +15,9 @@
 - redis(v3.2)
 - mongodb(v3.4)
 
+## 测试数据
+　我们提供了基于[postman](https://www.getpostman.com/)的测试数据，导入test目录中的测试集(postman_collection.json)和测试环境变量(postman_environment.json)即可。
+
+- tornado(v4.5.2)
 ## TODO
 - 异步获取数据库
