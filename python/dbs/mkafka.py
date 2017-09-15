@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-__all__ = ['Kafaka']
+__all__ = ['Kafka']
 
 import json
 import base64

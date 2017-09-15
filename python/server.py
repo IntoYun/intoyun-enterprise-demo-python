@@ -15,7 +15,7 @@ def fetchKafkaData():
 
 if __name__ == "__main__":
 
-    app = Application(debug=True)
+    app = Application(debug=True, cookie_secret=sysConf["COOKIE_SECRET"])
     app.add_handlers(sysConf["VHOST"], routes())
     print "===> http://{0}:{1}".format(sysConf["VHOST"], sysConf["PORT"])
 

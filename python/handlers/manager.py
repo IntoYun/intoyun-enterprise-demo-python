@@ -15,9 +15,12 @@ class ManagerHandler(BaseHandler):
         self.check_access()
         self.write("Hello, {}!\n".format(self.sess["username"]))
         self.write("you last login at {}, ".format(self.sess["loginAt"]))
-        remains = int(self.sess["unixts"]) + sysConf["COOKIE_TTL"] - Time().unixts()
-        self.write("and {} seconds later will quit automatically.\n".format(remains))
-        self.write("Thank you.".format(self.sess["loginAt"]))
+        if sysConf["USE_REDIS"]:
+            remains = int(self.sess["unixts"]) + sysConf["COOKIE_TTL"] - Time().unixts()
+            self.write("and {} seconds later will logout automatically.\n".format(remains))
+        else:
+            self.write("close your browser will logout automatically.\n")
+        self.write("Thank you.")
 
     def post(self):
         username = self.get_body_argument("username")
