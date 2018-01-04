@@ -5,7 +5,6 @@ import json
 from tornado.web import RequestHandler, HTTPError, Finish
 from tornado.httpclient import HTTPClient, HTTPRequest
 
-from dbs.mredis import Redis
 from utils.mrandom import Random
 from utils.mcodec import Codec
 from utils.mtime import Time
@@ -18,7 +17,10 @@ class BaseHandler(RequestHandler):
 
     def __init__(self, application, request, **kwargs):
         super(BaseHandler, self).__init__(application, request, **kwargs)
-        self.redis = Redis()
+
+        if sysConf["USE_REDIS"]:
+            from dbs.mredis import Redis
+            self.redis = Redis()
 
     def check_access(self):
         print "===> check_access..."
