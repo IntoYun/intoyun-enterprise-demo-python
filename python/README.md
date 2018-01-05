@@ -36,9 +36,10 @@
     我们提供了基于[postman](https://www.getpostman.com/) 的测试数据，导入test目录中的测试集(postman_collection.json)和测试环境变量(postman_environment.json)即可。请求地址: `http://{{host}}:{{port}}/manager`
 
 - Websocket
-    我们提供了一个基于nodejs的websocket测试客户端，需要依赖ws库。请求地址: `ws://{{host}}:{{port}}/websocket`
-    - npm install --save ws
+    我们提供了一个基于 python 的 websocket 测试客户端，需要依赖 websocket-client 库。请求地址: `ws://{{host}}:{{port}}/websocket`
 
+    - pip install websocket-client
+    
 ## TODO
 - 异步获取数据库
 - 存储设备数据
