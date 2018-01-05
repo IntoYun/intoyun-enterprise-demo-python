@@ -23,7 +23,14 @@
 
 
 ## 测试数据
-- 我们假设企业服务器使用"192.168.0.46"这个IP, 如果有需要，请修改相应的配置文件(config.system)和测试脚本(test目录)的服务器IP。
+
+- 配置
+
+    默认企业服务器使用IP "192.168.0.46", 请将如果有需要，请修改相应的配置文件(configs.system)的服务器IP;
+
+    配置configs/intoyun.py 中的 APP_ID 和 APP_SECRET 为你的服务器授权标识和授权密钥;
+
+    运行测试脚本 test/wsClient.py 时需要配置 devId 为你要订阅的设备标识，server 为你的服务器地址，sessKey 为 configs/system.py 中的 SESS_KEY。
 
 - HTTP
     我们提供了基于[postman](https://www.getpostman.com/) 的测试数据，导入test目录中的测试集(postman_collection.json)和测试环境变量(postman_environment.json)即可。请求地址: `http://{{host}}:{{port}}/manager`
