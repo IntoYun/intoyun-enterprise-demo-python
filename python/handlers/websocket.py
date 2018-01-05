@@ -18,7 +18,6 @@ class WebsocketHandler(tornado.websocket.WebSocketHandler):
 
     def open(self):
         self.add_anonymous(self)
-        self.write_message("please login immediately!")
 
     def on_close(self):
         if self.deviceId:
@@ -34,9 +33,8 @@ class WebsocketHandler(tornado.websocket.WebSocketHandler):
             if len(did)==24:
                 self.deviceId = did
                 self.add_trusted(did, self)
-                self.write_message("welcome abored " + did)
             else:
-                self.write_message("need login first!")
+                # self.write_message("need login first!")
                 self.close()
         else:
             pass # ignore

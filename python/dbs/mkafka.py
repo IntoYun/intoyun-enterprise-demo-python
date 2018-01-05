@@ -57,10 +57,10 @@ def parse_data(message, aes_key):
             t = WebsocketHandler.trusted
             if len(t)>0 and t.get(devId):
                 print "==> there are {} clients of devId: {} ".format(len(t.get(devId)), devId)
-                data = dict(meta=info_msg['body']['data'], ts=info_msg['ts'])
+                print "==> body: ", info_msg['body']
+                # data = dict(meta=info_msg['body']['data'], ts=info_msg['ts'])
                 for cli in t[devId]:
-                    cli.write_message("realtime meta info: " + json.dumps(data))
-
+                    cli.write_message(json.dumps(info_msg))
         elif (code==WIFI_RX_CODE)or(code==GW_RX_CODE)or(code==LORA_RX_CODE)or(code==TCP_RX_CODE):
             rx_msg = {}
             rx_msg['code'] = code
@@ -76,9 +76,10 @@ def parse_data(message, aes_key):
             t = WebsocketHandler.trusted
             if len(t)>0 and t.get(devId):
                 print "==> there are {} clients of devId: {} ".format(len(t.get(devId)), devId)
-                data = dict(dps=rx_msg['body']['data'], ts=rx_msg['ts'])
+                # data = dict(dps=rx_msg['body']['data'], ts=rx_msg['ts'])
                 for cli in t[devId]:
-                    cli.write_message("realtime sensor data: " + json.dumps(data))
+                    print "==> rx_msg_body: ", rx_msg['body']
+                    cli.write_message(json.dumps(rx_msg))
 
 
 def parse_info_data(payload):
