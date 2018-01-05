@@ -6,8 +6,8 @@ import json
 import requests 
 import urllib
 
-devId    = "0x5m6r2eg000000000000ae5" # 订阅该设备的信息 
-server   = '192.168.1.100:8080'       # 服务器地址 
+devId    = "YOUR_DEVICE_ID" # 订阅该设备的信息 
+server   = '192.168.0.46:8080'       # 服务器地址 
 httpUrl  = 'http://'+server
 wsUrl    = "ws://"+server+"/websocket"
 username = 'admin'
