@@ -62,9 +62,8 @@ def restore_dps(prdId, code, data):
 def request_dps(prdId):
     dps = dpsInfo.get(prdId, -1)
     if dps == -1:
-        print "====> url: ", httpUrl
         prdReq  = requests.get(httpUrl+'/product/'+prdId)
-        print "===> prdReq.content: ", prdReq.content
+        # print "===> prdReq.content: ", prdReq.content
         prd = json.loads(prdReq.content)
         # print "===> get dps: ", prd['datapoints'] 
         newdps = reformat_dps(prd['datapoints'])
