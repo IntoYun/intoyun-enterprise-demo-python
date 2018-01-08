@@ -6,13 +6,9 @@ import json
 import requests 
 import urllib
 
-devId    = "YOUR_DEVICE_ID" # 订阅该设备的信息 
 server   = '192.168.0.46:8080'       # 服务器地址 
 httpUrl  = 'http://'+server
 wsUrl    = "ws://"+server+"/websocket"
-username = 'admin'
-password = 'admin'
-sessKey  = 'mySess'             # 和 configs/system.py 中的 "SESS_KEY" 值一致.  
 
 # 消息类型编号
 WIFI_INFO_CODE = 11
@@ -27,8 +23,7 @@ TCP_RX_CODE    = 24
 dpsInfo = dict()
 
 def on_open(ws):
-    d = json.dumps({"deviceId": devId})
-    ws.send(d)
+    print "===> connect to demo server successfully."
 
 def on_close(ws):
     print "===> ws closed!!!"
@@ -68,9 +63,7 @@ def request_dps(prdId):
     dps = dpsInfo.get(prdId, -1)
     if dps == -1:
         print "====> url: ", httpUrl
-        authReq = requests.post(httpUrl+'/manager', {'username': username, 'password': password})
-        cookies = dict({sessKey : authReq.cookies[sessKey]})
-        prdReq  = requests.get(httpUrl+'/product/'+prdId, cookies=cookies)
+        prdReq  = requests.get(httpUrl+'/product/'+prdId)
         print "===> prdReq.content: ", prdReq.content
         prd = json.loads(prdReq.content)
         # print "===> get dps: ", prd['datapoints'] 

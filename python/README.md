@@ -14,6 +14,7 @@
 - tornado(v4.5.2)
 
 为了从IntoYun平台获取设备的实时数据并通过websocket协议推送到浏览器端, 我们需要安装如下的依赖
+
 - pip install pycrypto
 - pip install kafka-python
 - pip install futures (for python2)
@@ -30,7 +31,7 @@
 
     配置configs/intoyun.py 中的 APP_ID 和 APP_SECRET 为你的服务器授权标识和授权密钥;
 
-    运行测试脚本 test/wsClient.py 时需要配置 devId 为你要订阅的设备标识，server 为你的服务器地址，sessKey 为 configs/system.py 中的 SESS_KEY。
+    运行测试脚本 test/wsClient.py 时需要配置 server 为你的服务器地址。
 
 - HTTP
     我们提供了基于[postman](https://www.getpostman.com/) 的测试数据，导入test目录中的测试集(postman_collection.json)和测试环境变量(postman_environment.json)即可。请求地址: `http://{{host}}:{{port}}/manager`

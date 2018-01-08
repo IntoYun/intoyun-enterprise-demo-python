@@ -23,22 +23,23 @@ class BaseHandler(RequestHandler):
             self.redis = Redis()
 
     def check_access(self):
-        print "===> check_access..."
-        if sysConf["USE_REDIS"]:
-            self.sessid = self.get_cookie(sysConf["SESS_KEY"])
-            if not self.sessid:
-                self.raise_exception(401, "please login first")
-            hashkey = sysConf["SESS_PRE"] + self.sessid
-            self.sess = self.redis.hgetall(hashkey)
-        else:
-            sessStr = self.get_secure_cookie(sysConf["SESS_KEY"])
-            if not sessStr:
-                self.raise_exception(401, "please login first")
-            self.sess = json.loads(sessStr)
+        # print "===> check_access..."
+        # if sysConf["USE_REDIS"]:
+        #     self.sessid = self.get_cookie(sysConf["SESS_KEY"])
+        #     if not self.sessid:
+        #         self.raise_exception(401, "please login first")
+        #     hashkey = sysConf["SESS_PRE"] + self.sessid
+        #     self.sess = self.redis.hgetall(hashkey)
+        # else:
+        #     sessStr = self.get_secure_cookie(sysConf["SESS_KEY"])
+        #     if not sessStr:
+        #         self.raise_exception(401, "please login first")
+        #     self.sess = json.loads(sessStr)
 
-        print "===> self.sess: ", self.sess
-        if not self.sess:
-            self.raise_exception(401, "session expired, please relogin")
+        # print "===> self.sess: ", self.sess
+        # if not self.sess:
+        #     self.raise_exception(401, "session expired, please relogin")
+        pass
 
     def set_session(self, props):
         print "===> set_session..."

@@ -14,13 +14,13 @@ from handlers.websocket import WebsocketHandler
 
 
 WIFI_INFO_CODE = 11
-GW_INFO_CODE = 12
+GW_INFO_CODE   = 12
 LORA_INFO_CODE = 13
-TCP_INFO_CODE = 14
-WIFI_RX_CODE = 21
-GW_RX_CODE = 22
-LORA_RX_CODE = 23
-TCP_RX_CODE = 24
+TCP_INFO_CODE  = 14
+WIFI_RX_CODE   = 21
+GW_RX_CODE     = 22
+LORA_RX_CODE   = 23
+TCP_RX_CODE    = 24
 
 BS = 16
 pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
@@ -48,37 +48,30 @@ def parse_data(message, aes_key):
             info_msg['ts'] = ts
             info_msg['sign'] = sign
             info_msg['body'] = parse_info_data(decoded_payload)
-            # print "parse info message: ", info_msg
 
             print "==> receive info message"
             print "==> there are {} anonymouses".format(len(WebsocketHandler.anonymous))
             print "==> there are {} kinds of devices".format(len(WebsocketHandler.trusted))
             devId = info_msg['body']['devId']
-            t = WebsocketHandler.trusted
-            if len(t)>0 and t.get(devId):
-                print "==> there are {} clients of devId: {} ".format(len(t.get(devId)), devId)
-                print "==> body: ", info_msg['body']
-                # data = dict(meta=info_msg['body']['data'], ts=info_msg['ts'])
-                for cli in t[devId]:
+            subs = WebsocketHandler.anonymous
+            if len(subs)>0:  
+                for cli in subs:
                     cli.write_message(json.dumps(info_msg))
+
         elif (code==WIFI_RX_CODE)or(code==GW_RX_CODE)or(code==LORA_RX_CODE)or(code==TCP_RX_CODE):
             rx_msg = {}
             rx_msg['code'] = code
             rx_msg['ts'] = ts
             rx_msg['sign'] = sign
             rx_msg['body'] = parse_rx_data(decoded_payload)
-            # print "parse rx message: ", rx_msg
 
             print "==> receive data message"
             print "==> there are {} anonymouses".format(len(WebsocketHandler.anonymous))
             print "==> there are {} kinds of devices".format(len(WebsocketHandler.trusted))
             devId = rx_msg['body']['devId']
-            t = WebsocketHandler.trusted
-            if len(t)>0 and t.get(devId):
-                print "==> there are {} clients of devId: {} ".format(len(t.get(devId)), devId)
-                # data = dict(dps=rx_msg['body']['data'], ts=rx_msg['ts'])
-                for cli in t[devId]:
-                    print "==> rx_msg_body: ", rx_msg['body']
+            subs = WebsocketHandler.anonymous
+            if len(subs)>0:
+                for cli in subs:
                     cli.write_message(json.dumps(rx_msg))
 
 
@@ -86,10 +79,10 @@ def parse_info_data(payload):
     info_data = {}
     try:
         info = json.loads(payload)
-        info_data['prdId'] = info['prdId']
-        info_data['devId'] = info['devId']
+        info_data['prdId']  = info['prdId']
+        info_data['devId']  = info['devId']
         info_data['ipaddr'] = info['ipaddr']
-        info_data['data'] = json.loads(base64.b64decode(info['data']))
+        info_data['data']   = json.loads(base64.b64decode(info['data']))
     except Exception as e:
         print "Error: ", e
     return info_data
@@ -102,7 +95,7 @@ def parse_rx_data(payload):
         rx_data['prdId'] = rx['prdId']
         rx_data['devId'] = rx['devId']
         rx_data['stoId'] = rx['stoId']
-        rx_data['data'] = parse_rx_dps(base64.b64decode(rx['data']))
+        rx_data['data']  = parse_rx_dps(base64.b64decode(rx['data']))
     except Exception as e:
         print "Error: ", e
     return rx_data
