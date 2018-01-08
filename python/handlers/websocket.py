@@ -27,17 +27,6 @@ class WebsocketHandler(tornado.websocket.WebSocketHandler):
 
     def on_message(self, message):
         print "=====> WebSocket receive: " + message
-        if not self.deviceId:
-            auth = tornado.escape.json_decode(message)
-            did = auth.get("deviceId", "")
-            if len(did)==24:
-                self.deviceId = did
-                self.add_trusted(did, self)
-            else:
-                # self.write_message("need login first!")
-                self.close()
-        else:
-            pass # ignore
 
     @classmethod
     def add_anonymous(cls, conn):
