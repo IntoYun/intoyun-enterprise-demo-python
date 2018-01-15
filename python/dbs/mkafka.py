@@ -54,7 +54,7 @@ def parse_data(message, aes_key):
             print "==> there are {} kinds of devices".format(len(WebsocketHandler.trusted))
             devId = info_msg['body']['devId']
             subs = WebsocketHandler.anonymous
-            if len(subs)>0:  
+            if len(subs)>0:
                 for cli in subs:
                     cli.write_message(json.dumps(info_msg))
 
@@ -83,6 +83,11 @@ def parse_info_data(payload):
         info_data['devId']  = info['devId']
         info_data['ipaddr'] = info['ipaddr']
         info_data['data']   = json.loads(base64.b64decode(info['data']))
+        if info.get('gwId') != None:
+            info_data['gwId'] = info['gwId']
+        if info.get('rssi') != None:
+            info_data['rssi'] = info['rssi']
+
     except Exception as e:
         print "Error: ", e
     return info_data
@@ -96,6 +101,11 @@ def parse_rx_data(payload):
         rx_data['devId'] = rx['devId']
         rx_data['stoId'] = rx['stoId']
         rx_data['data']  = parse_rx_dps(base64.b64decode(rx['data']))
+        if rx.get('gwId') != None:
+            rx_data['gwId'] = rx['gwId']
+        if rx.get('rssi') != None:
+            rx_data['rssi'] = rx['rssi']
+
     except Exception as e:
         print "Error: ", e
     return rx_data
