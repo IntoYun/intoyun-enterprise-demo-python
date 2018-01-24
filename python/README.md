@@ -6,41 +6,68 @@
 
 ## 准备工作
 
-1. 注册成为[IntoYun开发者](https://www.intoyun.com)，进行企业认证后，在__授权管理__中提交`服务器授权申请`。
+- 注册成为[IntoYun开发者](https://www.intoyun.com)，在**授权管理**中提交`服务器授权申请`。
 
 
 ## 开发依赖
 
-- tornado(v4.5.2)
+安装Web服务器框架`tornado`(实测版本为v4.5.2)
+```
+    pip install tornado
+```
 
 为了从IntoYun平台获取设备的实时数据并通过websocket协议推送到浏览器端, 我们需要安装如下的依赖
+```
+    pip install pycrypto
+    pip install kafka-python
+```
 
-- pip install pycrypto
-- pip install kafka-python
-- pip install futures (for python2)
+如果你当前使用的是Python2, 那么还需额外安装`futures`库
+```
+    pip install futures (for Python2)
+```
 
 如果你不想使用Cookie保存用户登录的信息，那么可以设置session存放到Redis中(可选，非必须)
-- redis(v3.2)
+```
+    pip install redis (for Redis)
+```
 
 
-## 测试数据
+## 启动服务
 
-- 配置
+- 替换configs/system.py文件中的`YOUR_DOMAIN_NAME`为你的域名或者IP地址(影响到VHOST和COOKIE_DOMAIN两个变量);
+- 修改configs/system.py文件中的`PORT`变量，指定监听端口，默认使用8080端口;
+- 替换configs/intoyun.py文件中的`YOUR_SERVER_AUTH_ID`和`YOUR_SERVER_AUTH_SECRET`为你的服务器授权标识和授权密钥;
 
-    默认企业服务器使用IP "192.168.0.46", 请将如果有需要，请修改相应的配置文件(configs.system)的服务器IP;
+启动服务: `python server.py`
 
-    配置configs/intoyun.py 中的 APP_ID 和 APP_SECRET 为你的服务器授权标识和授权密钥;
 
-    运行测试脚本 test/wsClient.py 时需要配置 server 为你的服务器地址。
+## 测试功能
 
-- HTTP
-    我们提供了基于[postman](https://www.getpostman.com/) 的测试数据，导入test目录中的测试集(postman_collection.json)和测试环境变量(postman_environment.json)即可。请求地址: `http://{{host}}:{{port}}/manager`
+### 获取实时数据(Websocket)
 
-- Websocket
-    我们提供了一个基于 python 的 websocket 测试客户端，需要依赖 websocket-client 库。请求地址: `ws://{{host}}:{{port}}/websocket`
+- 安装依赖：
+```
+    pip install websocket-client
+    pip install requests
+```
+- 进入test/wsClient目录;
+- 替换wsClient.py文件中的`YOUR_DOMAIN_NAME`为你的服务器域名或者IP地址;
+- 修改wsClient.py文件中的`port`变量，指定服务器使用的端口，默认为8080端口;
 
-    - pip install websocket-client
-    
+启动客户端: `python wsClient.py`
+
+
+
+### 企业API接口(HTTP)
+
+- 我们提供了基于[postman](https://www.getpostman.com/) 的测试数据;
+- 进入到test目录中;
+- 导入测试接口(postman_collection.json);
+- 导入环境变量(postman_environment.json);
+- 修改环境变量的host为你的服务器域名或者IP地址;
+
+
 ## TODO
 - 异步获取数据库
 - 存储设备数据

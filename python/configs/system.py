@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 sysConf = {
-    "VHOST": "192.168.0.46",
+    "VHOST": "YOUR_DOMAIN_NAME",
     "PORT": 8080,
 
     "USE_REDIS": False,
@@ -10,6 +10,6 @@ sysConf = {
     "SESS_PRE": "web:sess:",
 
     "COOKIE_SECRET": "this_is_just_a_bad_secret",
-    "COOKIE_DOMAIN": "192.168.0.46",
+    "COOKIE_DOMAIN": "YOUR_DOMAIN_NAME",
     "COOKIE_TTL": 30*60, # seconds
 }
