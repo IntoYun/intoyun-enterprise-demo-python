@@ -1,7 +1,7 @@
 第三方企业接入示例
 ==================
 
-基于IntoYun平台的[企业API接口](http://docs.intoyun.com/yunapi/join-server/enterprise/)，我们选择[tornado异步框架](http://www.tornadoweb.org)这个优秀的异步网络框架，构建一款适用于企业内部运营管理和设备监控的服务器后台。
+基于IntoYun平台的[企业API接口](http://docs.intoyun.com/yunapi/join-server/enterprise/)，我们选择[tornado](http://www.tornadoweb.org)这个优秀的异步网络框架，构建一款适用于企业内部运营管理和设备监控的服务器后台。
 
 
 ## 准备工作
