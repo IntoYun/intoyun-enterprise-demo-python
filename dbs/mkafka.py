@@ -68,7 +68,6 @@ def parse_data(message, aes_key):
             print "==> receive data message"
             print "==> there are {} anonymouses".format(len(WebsocketHandler.anonymous))
             print "==> there are {} kinds of devices".format(len(WebsocketHandler.trusted))
-            print "==> rx_msg.body: {}".format(rx_msg['body'])
             devId = rx_msg['body']['devId']
             subs = WebsocketHandler.anonymous
             if len(subs)>0:
