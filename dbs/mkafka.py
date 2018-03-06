@@ -79,7 +79,7 @@ def parse_info_data(payload):
     info_data = {}
     try:
         info = json.loads(payload)
-        info_data['prdId']  = info['prdId']
+        info_data['prdId'] = info['prdId']
         info_data['devId']  = info['devId']
         info_data['ipaddr'] = info['ipaddr']
         info_data['data']   = json.loads(base64.b64decode(info['data']))
@@ -87,7 +87,6 @@ def parse_info_data(payload):
             info_data['gwId'] = info['gwId']
         if info.get('rssi') != None:
             info_data['rssi'] = info['rssi']
-
     except Exception as e:
         print "Error: ", e
     return info_data
@@ -97,15 +96,15 @@ def parse_rx_data(payload):
     # print "payload: ", payload
     try:
         rx = json.loads(payload)
-        rx_data['prdId'] = rx['prdId']
         rx_data['devId'] = rx['devId']
         rx_data['stoId'] = rx['stoId']
         rx_data['data']  = parse_rx_dps(base64.b64decode(rx['data']))
-        if rx.get('gwId') != None:
+        if rx.get('prdId') != None: # gateway的rx消息没有productId
+            rx_data['prdId'] = rx['prdId']
+        if rx.get('gwId') != None:  # 非lora节点没有
             rx_data['gwId'] = rx['gwId']
-        if rx.get('rssi') != None:
+        if rx.get('rssi') != None:  # 非lora节点没有
             rx_data['rssi'] = rx['rssi']
-
     except Exception as e:
         print "Error: ", e
     return rx_data
@@ -115,9 +114,14 @@ def parse_rx_dps(data):
         dps = {}
         dpsdata = data[1:]
         payloadBytes = binascii.hexlify(data)
-        return parse_dp(dps, payloadBytes[b(1):])
-    else:
-        return {}
+        try:
+            dps = parse_dp(dps, payloadBytes[b(1):])
+        except Exception as e:
+            print "Error: ", e
+            dps = {0: data}
+        return dps
+    else:                       # dataformat=custom的数据可以使用数据点0表示，内容是所有数据
+        return {0: data}
 
 def parse_dp(dps, binStr):
     if binStr != "":
