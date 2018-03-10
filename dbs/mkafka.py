@@ -21,6 +21,7 @@ WIFI_RX_CODE   = 21
 GW_RX_CODE     = 22
 LORA_RX_CODE   = 23
 TCP_RX_CODE    = 24
+HTTP_INFO_CODE = 30
 
 BS = 16
 pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
@@ -30,6 +31,7 @@ def b(n):
     return n*2
 
 def parse_data(message, aes_key):
+    print "==> receive crude message: ", message
     jsonData = json.loads(message)
     code     = jsonData['code']
     ts       = jsonData['ts']
@@ -73,6 +75,16 @@ def parse_data(message, aes_key):
             if len(subs)>0:
                 for cli in subs:
                     cli.write_message(json.dumps(rx_msg))
+
+        elif (code==HTTP_INFO_CODE):
+            jsonData['body'] = json.loads(decoded_payload)
+            print "==> receive http info message"
+            print "==> there are {} anonymouses".format(len(WebsocketHandler.anonymous))
+            print "==> there are {} kinds of devices".format(len(WebsocketHandler.trusted))
+            subs = WebsocketHandler.anonymous
+            if len(subs)>0:
+                for cli in subs:
+                    cli.write_message(json.dumps(jsonData))
 
 
 def parse_info_data(payload):
