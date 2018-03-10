@@ -32,13 +32,13 @@ def on_close(ws):
     print "===> ws closed!!!"
 
 def on_message(ws, message):
-    # print "===> message: ", message
+    print "===> message: ", message
+
     msg = json.loads(message)
-    # print "===> msg: ", msg
-    prdId = msg['body']['prdId']
-    print "===> original dps: ", msg['body']['data']
-    newdata = restore_dps(prdId, msg['code'], msg['body']['data'])
-    print "===> real dps    : ", newdata
+    prdId = msg['body'].get('prdId', None)
+    if prdId:
+        realdps = restore_dps(prdId, msg['code'], msg['body']['data'])
+        print "===> real dps : ", realdps
 
 def on_error(ws, error):
     print "===> error: ", error
