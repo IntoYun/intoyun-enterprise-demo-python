@@ -23,7 +23,8 @@ GW_RX_CODE     = 22
 LORA_RX_CODE   = 23
 TCP_RX_CODE    = 24
 
-dpsInfo = dict()
+dpsInfo = dict() # datapoints of product
+dfsInfo = dict() # dataformats of product
 
 def on_open(ws):
     print "===> connect to ws server successfully."
@@ -32,13 +33,14 @@ def on_close(ws):
     print "===> ws closed!!!"
 
 def on_message(ws, message):
-    print "===> message: ", message
-
     msg = json.loads(message)
     prdId = msg['body'].get('prdId', None)
     if prdId:
-        realdps = restore_dps(prdId, msg['code'], msg['body']['data'])
-        print "===> real dps : ", realdps
+        if dfsInfo[prdId] == "tlv":
+            realdps = restore_dps(prdId, msg['code'], msg['body']['data'])
+            print "===> tlv data: ", realdps
+        elif dfsInfo[prdId] == "custom":
+            print "===> base64(custom data): ", msg['body']['data']
 
 def on_error(ws, error):
     print "===> error: ", error
@@ -62,26 +64,31 @@ def restore_dps(prdId, code, data):
     else:
         return data
 
+
 def request_dps(prdId):
     dps = dpsInfo.get(prdId, -1)
     if dps == -1:
         prdReq  = requests.get(httpUrl+'/product/'+prdId)
-        # print "===> prdReq.content: ", prdReq.content
         prd = json.loads(prdReq.content)
-        # print "===> get dps: ", prd['datapoints']
         newdps = reformat_dps(prd['datapoints'])
         dpsInfo[prdId] = newdps
         return newdps
     else:
-        # print "===> cached dps: ", dps
         return dps
 
 def reformat_dps(datapoints):
     newdps = dict()
     for dp in datapoints:
         newdps[dp['dpId']] = dp
-    # print "==> newdps: ", newdps
     return newdps
+
+
+def request_prds():
+    res = requests.get(httpUrl+'/product')
+    prds = json.loads(res.content)
+    for prd in prds:
+        dfsInfo[prd['productId']] = prd['dataformat']
+
 
 if __name__ == "__main__":
     websocket.enableTrace(True)
@@ -89,6 +96,11 @@ if __name__ == "__main__":
                                 on_message = on_message,
                                 on_error = on_error,
                                 on_close = on_close)
-    print "===> ws: ", ws
+
+    print "===> fetch product dataformats"
+    request_prds()
+
+    print "===> setting on_open callback"
     ws.on_open = on_open
+
     ws.run_forever()

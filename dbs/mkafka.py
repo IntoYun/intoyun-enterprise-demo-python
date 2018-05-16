@@ -3,15 +3,6 @@
 
 __all__ = ['Kafka']
 
-import json
-import base64
-import binascii
-import struct
-import hashlib
-from Crypto import Random
-from Crypto.Cipher import AES
-from handlers.websocket import WebsocketHandler
-
 
 WIFI_INFO_CODE = 11
 GW_INFO_CODE   = 12
@@ -23,189 +14,170 @@ LORA_RX_CODE   = 23
 TCP_RX_CODE    = 24
 HTTP_INFO_CODE = 30
 
-BS = 16
-pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
-unpad = lambda s : s[0:-ord(s[-1])]
+TLV_BOOL  = 0 # 布尔型
+TLV_NUM   = 1 # 数值型
+TLV_ENUM  = 2 # 枚举型
+TLV_STR   = 3 # 字符型
+TLV_EXTRA = 4 # 扩展型
+
+
+from utils.mcodec import Codec
 
 def b(n):
     return n*2
 
-def parse_data(message, aes_key):
-    print "==> receive crude message: ", message
-    jsonData = json.loads(message)
-    code     = jsonData['code']
-    ts       = jsonData['ts']
-    sign     = jsonData['sign']
-    body     = jsonData['body']
-    mic      = hashlib.md5(body).hexdigest()
-    if mic == sign:
-        base64_decoded_msg = base64.b64decode(body)
-        iv = base64_decoded_msg[:AES.block_size]
-        encoded_payload = base64_decoded_msg[16:]
-        cipher = AES.new(aes_key, AES.MODE_CBC, iv)
-        decoded_payload = unpad(cipher.decrypt(encoded_payload))
-        if (code==WIFI_INFO_CODE)or(code==GW_INFO_CODE)or(code==LORA_INFO_CODE)or(code==TCP_INFO_CODE):
-            info_msg = {}
-            info_msg['code'] = code
-            info_msg['ts'] = ts
-            info_msg['sign'] = sign
-            info_msg['body'] = parse_info_data(decoded_payload)
-
-            print "==> receive info message"
-            print "==> there are {} anonymouses".format(len(WebsocketHandler.anonymous))
-            print "==> there are {} kinds of devices".format(len(WebsocketHandler.trusted))
-            devId = info_msg['body']['devId']
-            subs = WebsocketHandler.anonymous
-            if len(subs)>0:
-                for cli in subs:
-                    cli.write_message(json.dumps(info_msg))
-
-        elif (code==WIFI_RX_CODE)or(code==GW_RX_CODE)or(code==LORA_RX_CODE)or(code==TCP_RX_CODE):
-            rx_msg = {}
-            rx_msg['code'] = code
-            rx_msg['ts'] = ts
-            rx_msg['sign'] = sign
-            rx_msg['body'] = parse_rx_data(decoded_payload)
-
-            print "==> receive data message"
-            print "==> there are {} anonymouses".format(len(WebsocketHandler.anonymous))
-            print "==> there are {} kinds of devices".format(len(WebsocketHandler.trusted))
-            devId = rx_msg['body']['devId']
-            subs = WebsocketHandler.anonymous
-            if len(subs)>0:
-                for cli in subs:
-                    cli.write_message(json.dumps(rx_msg))
-
-        elif (code==HTTP_INFO_CODE):
-            jsonData['body'] = json.loads(decoded_payload)
-            print "==> receive http info message"
-            print "==> there are {} anonymouses".format(len(WebsocketHandler.anonymous))
-            print "==> there are {} kinds of devices".format(len(WebsocketHandler.trusted))
-            subs = WebsocketHandler.anonymous
-            if len(subs)>0:
-                for cli in subs:
-                    cli.write_message(json.dumps(jsonData))
-
-
-def parse_info_data(payload):
-    info_data = {}
-    try:
-        info = json.loads(payload)
-        info_data['prdId'] = info['prdId']
-        info_data['devId']  = info['devId']
-        info_data['ipaddr'] = info['ipaddr']
-        info_data['data']   = json.loads(base64.b64decode(info['data']))
-        if info.get('gwId') != None:
-            info_data['gwId'] = info['gwId']
-        if info.get('rssi') != None:
-            info_data['rssi'] = info['rssi']
-    except Exception as e:
-        print "Error: ", e
-    return info_data
-
-def parse_rx_data(payload):
-    rx_data = {}
-    # print "payload: ", payload
-    try:
-        rx = json.loads(payload)
-        rx_data['devId'] = rx['devId']
-        rx_data['stoId'] = rx['stoId']
-        rx_data['data']  = parse_rx_dps(base64.b64decode(rx['data']))
-        if rx.get('prdId') != None: # gateway的rx消息没有productId
-            rx_data['prdId'] = rx['prdId']
-        if rx.get('gwId') != None:  # 非lora节点没有
-            rx_data['gwId'] = rx['gwId']
-        if rx.get('rssi') != None:  # 非lora节点没有
-            rx_data['rssi'] = rx['rssi']
-    except Exception as e:
-        print "Error: ", e
-    return rx_data
-
 def parse_rx_dps(data):
-    if data[:1] == '1':
-        dps = {}
-        dpsdata = data[1:]
-        payloadBytes = binascii.hexlify(data)
-        try:
-            dps = parse_dp(dps, payloadBytes[b(1):])
-        except Exception as e:
-            print "Error: ", e
-            dps = {0: data}
-        return dps
-    else:                       # dataformat=custom的数据可以使用数据点0表示，内容是所有数据
-        return {0: data}
+    realData = data[1:] # ignore the first byte which represent itself as tlv-format
+    hexData = Codec.encHex(realData)
+    try:
+        return parse_dp({}, hexData)
+    except Exception as e:
+        print "==> parse_dp Error: ", e
 
-def parse_dp(dps, binStr):
-    if binStr != "":
-        dpId, rest0 = get_dpId(binStr)
-        dpTyp, rest1 = get_dpType(rest0)
-        dpLen, rest2 = get_dpLen(rest1)
-        dpVal, rest3 = get_value(dpTyp, dpLen, rest2)
+def parse_dp(dps, hexData):
+    if hexData != "":
+        dpId,  rest = get_dpId(hexData)
+        dpTyp, rest = get_dpType(rest)
+        dpLen, rest = get_dpLen(rest)
+        dpVal, rest = get_value(dpTyp, dpLen, rest)
         dps[dpId] = dpVal
-        return parse_dp(dps, rest3)
+        return parse_dp(dps, rest)
     else:
         return dps
 
-def get_dpId(binStr):
-    dpId0 =  int(binStr[:b(1)], 16)
-    if dpId0 > 127 :
-        dpId = int(binStr[:b(2)], 16) - 0x8000
-        return (dpId, binStr[b(2):])
+def get_dpId(hexData):
+    dpId = int(hexData[:b(1)], 16)
+    if dpId > 127:
+        dpId = int(hexData[:b(2)], 16) - 0x8000
+        return (dpId, hexData[b(2):])
     else:
-        return (dpId0,binStr[b(1):])
+        return (dpId, hexData[b(1):])
 
-def get_dpType(binStr):
-    dpTyp = int(binStr[:b(1)], 16)
-    return (dpTyp, binStr[b(1):])
+def get_dpType(hexData):
+    dpTyp = int(hexData[:b(1)], 16)
+    return (dpTyp, hexData[b(1):])
 
-def get_dpLen(binStr):
-    length0 =  int(binStr[:b(1)], 16)
-    if length0 > 127 :
-        length = int(binStr[:b(2)], 16) - 0x8000
-        return (length, binStr[b(2):])
+def get_dpLen(hexData):
+    length =  int(hexData[:b(1)], 16)
+    if length > 127 :
+        length = int(hexData[:b(2)], 16) - 0x8000
+        return (length, hexData[b(2):])
     else:
-        return (length0, binStr[b(1):])
+        return (length, hexData[b(1):])
 
-def get_value(dpTyp, dpLen, binStr):
-    if dpTyp == 0:
-          if int(binStr[:b(1)], 16) == 0:
-              return (False, binStr[b(1):])
-          elif int(binStr[:b(1)], 16) == 1:
-              return (True, binStr[b(1):])
-    elif dpTyp == 1:
-        return (int(binStr[:b(dpLen)], 16), binStr[b(dpLen):])
-    elif dpTyp == 2:
-        return (int(binStr[:b(1)], 16), binStr[b(1):])
-    elif dpTyp == 3:
-        return (binascii.unhexlify(binStr[:b(dpLen)]), binStr[b(dpLen):])
-    elif dpTyp == 4:
-        return (binascii.unhexlify(binStr[:b(dpLen)]), binStr[b(dpLen):])
+def get_value(dpTyp, dpLen, hexData):
+    if dpTyp == TLV_BOOL:
+          if int(hexData[:b(1)], 16) == 0:
+              return (False, hexData[b(1):])
+          elif int(hexData[:b(1)], 16) == 1:
+              return (True, hexData[b(1):])
+    elif dpTyp == TLV_NUM:
+        return (int(hexData[:b(dpLen)], 16), hexData[b(dpLen):])
+    elif dpTyp == TLV_ENUM:
+        return (int(hexData[:b(1)], 16), hexData[b(1):])
+    elif dpTyp == TLV_STR:
+        return (Codec.decHex(hexData[:b(dpLen)]), hexData[b(dpLen):])
+    elif dpTyp == TLV_EXTRA:
+        return (Codec.decHex(hexData[:b(dpLen)]), hexData[b(dpLen):])
     else:
-        print "unsupported type."
+        print "==> Error: unsupported tlv-type."
 
 
 from kafka import KafkaConsumer
 from tornado.concurrent import run_on_executor
 from concurrent.futures import ThreadPoolExecutor
+from handlers.websocket import WebsocketHandler
+from utils.client import Httpc
 from configs.kafka import config
 from configs.intoyun import ityConf
 
 class Kafka(object):
     executor = ThreadPoolExecutor(max_workers=2)
+    IntoYunPrdDict = dict()
+    prdFetched = False
+
+    def __init__(self):
+        if not Kafka.prdFetched:
+            print "====> init Kafka..."
+            code, body = Httpc.fetchSync("/v1/product", "GET")
+            if code > 300:
+                print "==> Critical Error: ", body
+                print "==> Exit!!!"
+                IOLoop.current().stop()
+
+            prdDict = dict()
+            for prd in Codec.decJson(body):
+                prdDict[prd['productId']] = prd['dataformat']
+
+            Kafka.IntoYunPrdDict = prdDict
+            Kafka.prdFetched = True
+
+    @classmethod
+    def parse_info_data(cls, payload):
+        try:
+            info = Codec.decJson(payload)
+            info['data'] = Codec.decJson(Codec.decBase64(info['data']))
+        except Exception as e:
+            print "==> parse info data Error: ", e
+        return info
+
+    @classmethod
+    def parse_rx_data(cls, payload):
+        try:
+            rx = Codec.decJson(payload)
+            if cls.IntoYunPrdDict[rx['prdId']] == "tlv":
+                rx['data'] = parse_rx_dps(Codec.decBase64(rx['data']))
+        except Exception as e:
+            print "==> parse rx data Error: ", e
+        return rx
+
+
+    @classmethod
+    def parse_data(cls, message, aes_key):
+        print "==> receive crude message: ", message
+        msgDict = Codec.decJson(message)
+        code    = msgDict['code']
+        ts      = msgDict['ts']
+        body    = msgDict['body']
+
+        if Codec.md5(body) == msgDict['sign']:
+            data = Codec.decAesCBC(Codec.decBase64(body), aes_key)
+            print "==> decode its 'body' field: ", data
+
+            if (code==WIFI_INFO_CODE)or(code==GW_INFO_CODE)or(code==LORA_INFO_CODE)or(code==TCP_INFO_CODE):
+                msgInfo = {'type':"info", 'code': code, 'ts':ts, 'body':cls.parse_info_data(data)}
+                msgInfo = Codec.encJson(msgInfo)
+                for cli in WebsocketHandler.anonymous:
+                    cli.write_message(msgInfo)
+            elif (code==WIFI_RX_CODE)or(code==GW_RX_CODE)or(code==LORA_RX_CODE)or(code==TCP_RX_CODE):
+                msgRx = {'type':"rx", 'code': code, 'ts':ts, 'body':cls.parse_rx_data(data)}
+                msgRx = Codec.encJson(msgRx)
+                for cli in WebsocketHandler.anonymous:
+                    cli.write_message(msgRx)
+            elif (code==HTTP_INFO_CODE):
+                info = Codec.decJson(data)
+                if info['resource'] == 'product':
+                    prdId = info['meta']['id']
+                    if info['action'] == "DELETE":
+                        del cls.IntoYunPrdDict[prdId]
+                    else:
+                        code, body = Httpc.fetchSync("/v1/product/"+prdId, "GET")
+                        if code > 300:
+                            print "==> Httpc Error: ", body
+                        else:
+                            cls.IntoYunPrdDict[prdId] = Codec.decJson(body)['dataformat']
+        else:
+            print "==> incorrect sign, drop this message!"
+
 
     @run_on_executor()
     def consume(self):
         broker = config["HOST"] + ":" + config["PORT"]
         appId = ityConf["APP_ID"]
         appSecret = ityConf["APP_SECRET"]
+        password = Codec.md5(appId+Codec.md5(appSecret))
 
         topic = "device-data-" + appId
-
-        m0 = hashlib.md5()
-        m0.update(appSecret)
-        m1 = hashlib.md5()
-        m1.update(appId+m0.hexdigest())
-        password = m1.hexdigest()
         consumer = KafkaConsumer(topic,
                                 bootstrap_servers=broker,
                                 api_version = (0, 10),
@@ -216,6 +188,7 @@ class Kafka(object):
                                 sasl_plain_username=appId,
                                 sasl_plain_password=password
         )
+
         aes_key = appSecret.decode("hex")
         for msg in consumer:
-            parse_data(msg.value, aes_key)
+            self.parse_data(msg.value, aes_key)

@@ -8,5 +8,4 @@ ityConf = {
     "APP_SECRET": "YOUR_SERVER_AUTH_SECRET",
 
     "SRV_HEADER": "X-IntoYun-SrvToken",
-    "RENEW_GAP": 5,
 }

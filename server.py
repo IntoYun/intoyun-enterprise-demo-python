@@ -21,6 +21,4 @@ if __name__ == "__main__":
 
     app.listen(sysConf["PORT"])
     IOLoop.current().spawn_callback(fetchKafkaData)
-    print "===> should be printed without blocked by fetchKafkaData()..."
-
     IOLoop.current().start()
