@@ -32,6 +32,20 @@
     pip install redis (for Redis)
 ```
 
+如果需要使用MongoDB数据库(可选，非必须), 需要安装支持Tornado的异步驱动[Motor](https://github.com/mongodb/motor)
+```
+    pip install motor (for MongoDB)
+```
+安装Motor需要注意版本, 否则会出现如下错误:
+
+```
+from pymongo.change_stream import ChangeStream
+ImportError: No module named change_stream
+```
+
+- motor1.2要求`pymongo > 3.4`
+- `pymongo < 3.4`只能适配motor1.1
+
 
 ## 启动服务
 
@@ -69,5 +83,4 @@
 
 
 ## TODO
-- 异步获取数据库
 - 存储设备数据
