@@ -3,6 +3,7 @@
 
 from tornado import gen
 from motor.motor_tornado import MotorClient
+from bson.objectid import ObjectId
 from configs.mongo import config
 
 
@@ -43,8 +44,11 @@ class Mongo(object):
     @gen.coroutine
     def find_one(self, qry, rfs=None, coll=None):
         mcoll = yield self.get_coll(coll)
+        if qry.get("_id"):
+            qry["_id"] = ObjectId(qry["_id"])
+
         result = yield mcoll.find_one(qry, rfs)
-        if result.get("_id"):
+        if result and result.get("_id"):
             result["_id"] = str(result["_id"])
         print "==> find_one result: ", result
         raise gen.Return(result)
@@ -52,6 +56,8 @@ class Mongo(object):
     @gen.coroutine
     def find(self, qry, rfs=None, coll=None):
         mcoll = yield self.get_coll(coll)
+        if qry.get("_id"):
+            qry["_id"] = ObjectId(qry["_id"])
         cursor = mcoll.find(qry, rfs)
 
         result = []
@@ -64,15 +70,21 @@ class Mongo(object):
         raise gen.Return(result)
 
     @gen.coroutine
-    def update_one(self, qry, upd, coll=None):
+    def update_one(self, qry, doc, coll=None):
         mcoll = yield self.get_coll(coll)
-        result = yield mcoll.update_one(qry, upd)
+        if qry.get("_id"):
+            qry["_id"] = ObjectId(qry["_id"])
+
+        result = yield mcoll.update_one(qry, {'$set': doc})
         print "==> update_one result: ", result.modified_count
         raise gen.Return(result.modified_count)
 
     @gen.coroutine
     def delete_one(self, qry, coll=None):
         mcoll = yield self.get_coll(coll)
+        if qry.get("_id"):
+            qry["_id"] = ObjectId(qry["_id"])
+
         result = yield mcoll.delete_one(qry)
         print "==> delete_one result: ", result.deleted_count
         raise gen.Return(result.deleted_count)
