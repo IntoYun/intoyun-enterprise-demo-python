@@ -6,6 +6,7 @@ from utils.mrandom import Random
 from utils.mcodec import Codec
 from utils.mtime import Time
 from configs.system import sysConf
+from configs.error import error
 
 
 class BaseHandler(RequestHandler):
@@ -66,3 +67,7 @@ class BaseHandler(RequestHandler):
         self.set_status(statusCode)
         self.write(msg)
         raise Finish()
+
+    def throw_error(self, errType, errMsg):
+        err = error[errType]
+        self.raise_exception(err["staCode"], {"code": err["errCode"], "msg": errMsg})
