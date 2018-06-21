@@ -6,6 +6,7 @@ from tornado.web import Application
 from tornado.ioloop import IOLoop
 from routes.enterprise import routes
 from dbs.mkafka import Kafka
+from utils.logger import log
 from configs.system import sysConf
 
 @coroutine
@@ -17,8 +18,8 @@ if __name__ == "__main__":
 
     app = Application(debug=True, cookie_secret=sysConf["COOKIE_SECRET"])
     app.add_handlers(sysConf["VHOST"], routes())
-    print "===> http://{0}:{1}".format(sysConf["VHOST"], sysConf["PORT"])
-
     app.listen(sysConf["PORT"])
+    log.info("==> http://{0}:{1}".format(sysConf["VHOST"], sysConf["PORT"]))
+
     IOLoop.current().spawn_callback(fetchKafkaData)
     IOLoop.current().start()
