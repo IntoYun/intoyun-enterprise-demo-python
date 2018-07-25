@@ -41,6 +41,8 @@ def on_message(ws, message):
             print "===> tlv data: ", realdps
         elif dfsInfo[prdId] == "custom":
             print "===> base64(custom data): ", msg['body']['data']
+    else:
+        print "===> other msg: ", msg['body']['data']
 
 def on_error(ws, error):
     print "===> error: ", error

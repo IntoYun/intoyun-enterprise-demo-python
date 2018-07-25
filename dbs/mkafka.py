@@ -4,6 +4,7 @@
 __all__ = ['Kafka']
 
 
+CONN_NOTF_CODE = 10
 WIFI_INFO_CODE = 11
 GW_INFO_CODE   = 12
 LORA_INFO_CODE = 13
@@ -85,9 +86,11 @@ def get_value(dpTyp, dpLen, hexData):
 
 from kafka import KafkaConsumer
 from tornado.concurrent import run_on_executor
+from tornado.ioloop import IOLoop
 from concurrent.futures import ThreadPoolExecutor
 from handlers.websocket import WebsocketHandler
 from utils.client import Httpc
+from utils.logger import log
 from configs.kafka import config
 from configs.intoyun import ityConf
 
@@ -98,11 +101,10 @@ class Kafka(object):
 
     def __init__(self):
         if not Kafka.prdFetched:
-            print "====> init Kafka..."
+            log.info("==> init Kafka...")
             code, body = Httpc.fetchSync("/v1/product", "GET")
             if code > 300:
-                print "==> Critical Error: ", body
-                print "==> Exit!!!"
+                log.warning("==> Can't fetch product info. Exit!!!")
                 IOLoop.current().stop()
 
             prdDict = dict()
@@ -111,6 +113,15 @@ class Kafka(object):
 
             Kafka.IntoYunPrdDict = prdDict
             Kafka.prdFetched = True
+
+    @classmethod
+    def parse_conn_data(cls, payload):
+        try:
+            conn = Codec.decJson(payload)
+            conn['data'] = Codec.decJson(Codec.decBase64(conn['data']))
+        except Exception as e:
+            print "==> parse conn data Error: ", e
+        return conn
 
     @classmethod
     def parse_info_data(cls, payload):
@@ -144,7 +155,12 @@ class Kafka(object):
             data = Codec.decAesCBC(Codec.decBase64(body), aes_key)
             print "==> decode its 'body' field: ", data
 
-            if (code==WIFI_INFO_CODE)or(code==GW_INFO_CODE)or(code==LORA_INFO_CODE)or(code==TCP_INFO_CODE):
+            if (code==CONN_NOTF_CODE):
+                msgConn = {'type':"conn", 'code': code, 'ts':ts, 'body':cls.parse_conn_data(data)}
+                msgConn = Codec.encJson(msgConn)
+                for cli in WebsocketHandler.anonymous:
+                    cli.write_message(msgConn)
+            elif (code==WIFI_INFO_CODE)or(code==GW_INFO_CODE)or(code==LORA_INFO_CODE)or(code==TCP_INFO_CODE):
                 msgInfo = {'type':"info", 'code': code, 'ts':ts, 'body':cls.parse_info_data(data)}
                 msgInfo = Codec.encJson(msgInfo)
                 for cli in WebsocketHandler.anonymous:
